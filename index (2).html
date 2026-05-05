@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THANY Luxury Consultation</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: linear-gradient(135deg, #000000, #1a1a1a);
+  color: white;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 900px;
+  padding: 20px;
+}
+
+.card {
+  background: #0f0f0f;
+  border-radius: 20px;
+  padding: 30px;
+  border: 1px solid rgba(255,215,0,0.2);
+}
+
+h1 {
+  color: gold;
+  letter-spacing: 3px;
+  text-align: center;
+}
+
+.input, .btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  background: #111;
+  color: white;
+}
+
+.btn {
+  cursor: pointer;
+}
+
+.gold {
+  background: gold;
+  color: black;
+  border: none;
+  font-weight: bold;
+}
+
+.section {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #222;
+  border-radius: 12px;
+  background: #0a0a0a;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.product {
+  border: 1px solid #222;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.product img {
+  width: 100%;
+  border-radius: 8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="card" id="app"></div>
+</div>
+
+<script>
+let step = -1;
+let answers = [];
+let result = "";
+let name = "";
+let phone = "";
+
+const questions = [
+  "After cleansing, how does your skin feel after 30 minutes?",
+  "How does your skin appear by midday?",
+  "How often do you experience breakouts?",
+  "How visible are your pores?",
+  "Does your skin react easily to products?"
+];
+
+const options = [
+  ["Soft and comfortable","Shiny or greasy","Tight or dry","Oily in some areas, dry in others"],
+  ["Balanced","Very shiny","Still dry","Shiny only in T-zone"],
+  ["Rarely","Frequently","Rare but dry","Only in some areas"],
+  ["Not visible","Large","Very small","Visible in some areas"],
+  ["Yes","No"]
+];
+
+const products = [
+  {name:"THANY Moisturizer", price:"₦9,000"},
+  {name:"THANY Cleanser", price:"₦9,000"},
+  {name:"THANY Toner", price:"₦8,500"},
+  {name:"THANY Sunscreen", price:"₦6,000"}
+];
+
+function render() {
+  const app = document.getElementById("app");
+
+  if (step === -1) {
+    app.innerHTML = `
+      <h1>THANY</h1>
+      <p style="text-align:center;color:#aaa;">Luxury Skincare Experience</p>
+
+      <input class="input" placeholder="Full Name" id="name">
+      <input class="input" placeholder="WhatsApp Number" id="phone">
+
+      <button class="btn gold" onclick="start()">Begin Consultation</button>
+
+      <div class="section">
+        <h3 style="color:gold;">About THANY</h3>
+        <p style="color:#ccc;">Luxury skincare tailored for real results.</p>
+      </div>
+
+      <div class="section">
+        <h3 style="color:gold;">Products</h3>
+        <div class="grid">
+          ${products.map(p => `
+            <div class="product">
+              <p><b>${p.name}</b></p>
+              <p style="color:#888">${p.price}</p>
+              <button class="btn" onclick="order()">Order</button>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  else if (result) {
+    app.innerHTML = `
+      <h1>THANY</h1>
+      <h2 style="text-align:center;">Result</h2>
+      <h2 style="color:gold;text-align:center;">${result}</h2>
+
+      <button class="btn gold" onclick="whatsapp()">Continue on WhatsApp</button>
+      <button class="btn" onclick="restart()">Restart</button>
+    `;
+  }
+
+  else {
+    let opts = options[step].map(o => 
+      `<button class="btn" onclick="answer('${o}')">${o}</button>`
+    ).join("");
+
+    app.innerHTML = `
+      <h1>THANY</h1>
+      <h3>${questions[step]}</h3>
+      ${opts}
+    `;
+  }
+}
+
+function start() {
+  name = document.getElementById("name").value.trim();
+  phone = document.getElementById("phone").value.trim();
+
+  if (!name || !phone) {
+    alert("Enter your details");
+    return;
+  }
+
+  step = 0;
+  render();
+}
+
+function answer(ans) {
+  answers.push(ans.toLowerCase());
+  step++;
+
+  if (step >= questions.length) analyze();
+  else render();
+}
+
+function analyze() {
+  let oily = 0, dry = 0, combo = 0;
+
+  answers.forEach(a => {
+    if (a.includes("shiny") || a.includes("greasy")) oily++;
+    if (a.includes("dry") || a.includes("tight")) dry++;
+    if (a.includes("some areas") || a.includes("t-zone")) combo++;
+  });
+
+  result = "Normal";
+
+  if (oily > dry && oily > combo) result = "Oily";
+  else if (dry > oily && dry > combo) result = "Dry";
+  else if (combo > oily && combo > dry) result = "Combination";
+
+  if (answers.includes("yes")) result += " + Sensitive";
+
+  render();
+}
+
+function whatsapp() {
+  let msg = `Hello THANY, my name is ${name}. My skin type is ${result}.`;
+  window.open(`https://wa.me/2349048916741?text=${encodeURIComponent(msg)}`, "_blank");
+}
+
+function order() {
+  window.open("https://wa.me/2349048916741", "_blank");
+}
+
+function restart() {
+  step = -1;
+  answers = [];
+  result = "";
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
